@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.contrib.auth.models import User
+from . models import UserProfile, AadharImage, AadharData
 
 from PIL import Image
 from numpy import array
@@ -34,22 +36,33 @@ def hello(request):
     return HttpResponse("Hello, World!")
 
 
-# def hello(request):
-#     users = UserTable.objects.filter(is_updated=False)
-#     for user in users:
-#         
-#         front_image_url = "http://" + request.get_host() + settings.MEDIA_URL + str(user.front)
-#         data = read_image(front_image_url,back_image_url)
-#         adhar = Adhaar(name=data["Name"],dob=data["Dob"],
-#             adhar_number=data["AdhaarNumber"],
-#             address = data["Address"],
-#             sex=data["Sex"])
-#         try:
-#             current_user = UserTable.objects.get(id=user.id)
-#             current_user.is_updated = True
-#             current_user.save()
-#             adhar.save()
-#         except:
-#             pass
-#     return HttpResponse("Task is done")
+def hello(request):
+    return render(request,"signup.html")
 
+
+def signup(request):
+    if request.method == "POST":
+        name = request.POST['name']
+        email = request.POST['email']
+        phone = request.POST['phone']
+        dob = request.POST['dob']
+        pan_number = request.POST['pan']
+        aadhar_number = request.POST['aadhar']
+        password = request.POST['password']
+
+        # create user
+        user = User.objects.create(username=email, first_name=name, email=email)
+        user.set_password(password)
+        user.save()
+
+        # userprofile
+        userprofile = UserProfile(name=name,
+            user = user,
+            dob=dob, 
+            adhar_number=aadhar_number,
+            pan_number=pan_number,
+            phone_number=phone)
+
+        userprofile.save()
+
+    return HttpResponse("Done")
