@@ -16,3 +16,24 @@ class UserProfile(models.Model):
 
     def __str__(self) -> str:
         return f"name : {self.name}"
+
+
+class AadharImage(models.Model):
+    front_image = models.FileField(upload_to='front')
+    back_image = models.FileField(upload_to='back')
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f"{self.profile.name}"
+
+
+class AadharData(models.Model):
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=False)
+    name = models.CharField(max_length=100, null=True)
+    dob = models.CharField(max_length=20, null=True)
+    adhar_number = models.CharField(max_length=20, null=True)
+    phone_number = models.CharField(max_length=20)
+    address = models.CharField(max_length=400, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.profile.name}"
