@@ -8,36 +8,35 @@ from numpy import array
 from pytesseract import image_to_string
 from django.conf import settings
 from . aadhaar_read_data import adhaar_read
+from rest_framework.response import Response
 
 
 
 import requests
 import io
 import ftfy
+import json
 # image_url = prefix + request.get_host() + STATIC_URL + "images/logo_80.png"
 # back_image_url = "http://" + request.get_host() + settings.MEDIA_URL + str(user.back)
 
 
 def read_image(path_f, path_b):
 
-    front_image = requests.get(path_b)
-    back_image = requests.get(path_f)
-    text_f = image_to_string(Image.open(io.BytesIO(front_image.content)), lang = 'eng')
-    text_b = image_to_string(Image.open(io.BytesIO(back_image.content)), lang = 'eng')
+    # front_image = requests.get(path_b)
+    # back_image = requests.get(path_f)
+
+    text_f = image_to_string(Image.open(path_f))
+    text_b = image_to_string(Image.open(path_b))
     text = text_f + text_b
     text = ftfy.fix_text(text)
     text = ftfy.fix_encoding(text)
-
     data = adhaar_read(text)
     return data
         
         
 def hello(request):
-    return HttpResponse("Hello, World!")
-
-
-def hello(request):
     return render(request,"signup.html")
+
 
 
 def signup(request):
@@ -64,5 +63,18 @@ def signup(request):
             phone_number=phone)
 
         userprofile.save()
-
     return HttpResponse("Done")
+
+
+def upload_aadhaar(request):
+    if request.method == "GET":
+        return render(request, 'aadhar.html')
+    if request.method == "POST":
+        front_image = request.FILES['front']
+        back_image = request.FILES['back']
+
+        data = read_image(front_image, back_image)
+        print(data)
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
+

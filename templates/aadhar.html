@@ -1,0 +1,22 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div>
+        <h2>SignUp page</h2>
+        <form action="/upload/aadhaar" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Front Aadhaar Image</label>
+            <input type="file" name="front"> <br>
+
+            <label>Back Aadhaar Image</label>
+            <input type="file" name="back"><br>
+
+            <input type="submit">
+
+        </form>
+    </div>
+
+    </body>
+
+</html>
