@@ -7,8 +7,11 @@ from PIL import Image
 from numpy import array
 from pytesseract import image_to_string
 from django.conf import settings
-from . aadhaar_read_data import adhaar_read
 from rest_framework.response import Response
+from django.shortcuts import redirect
+
+from . aadhaar_read_data import adhaar_read
+from . fetchdata import data_from_qr
 
 
 
@@ -25,45 +28,57 @@ def read_image(path_f, path_b):
     # front_image = requests.get(path_b)
     # back_image = requests.get(path_f)
 
-    text_f = image_to_string(Image.open(path_f))
-    text_b = image_to_string(Image.open(path_b))
+    image_f = Image.open(path_f)
+    image_b = Image.open(path_b)
+
+    print(type(image_f))
+
+    text_f = image_to_string(image_f)
+    text_b = image_to_string(image_b)
     text = text_f + text_b
     text = ftfy.fix_text(text)
     text = ftfy.fix_encoding(text)
     data = adhaar_read(text)
     return data
+
+
+def home(request):
+    return render(request, "aadhar.html")
         
-        
-def hello(request):
-    return render(request,"signup.html")
+def viewdata(request, pk):
+    try:
+        print(pk)
+        user: UserProfile
+        if request.method == "POST":
+            user = UserProfile.objects.get(phone=request.POST["phone"])
+        if request.method == "GET":
+            user = UserProfile.objects.get(id=pk)
+        return render(request, "viewdata.html", {"userdata":user})
+    except:
+        return render(request, "viewdata.html")
 
+    
+def newdata(request):
+    if request.method == "GET":
+        return render(request,"userdata.html")
 
-
-def signup(request):
     if request.method == "POST":
         name = request.POST['name']
-        email = request.POST['email']
         phone = request.POST['phone']
         dob = request.POST['dob']
-        pan_number = request.POST['pan']
-        aadhar_number = request.POST['aadhar']
-        password = request.POST['password']
-
-        # create user
-        user = User.objects.create(username=email, first_name=name, email=email)
-        user.set_password(password)
-        user.save()
+        aadhar_number = request.POST['aadhaar']
 
         # userprofile
         userprofile = UserProfile(name=name,
-            user = user,
-            dob=dob, 
+            dob=dob,
             adhar_number=aadhar_number,
-            pan_number=pan_number,
             phone_number=phone)
-
         userprofile.save()
-    return HttpResponse("Done")
+        print("saved data ###########")
+        print(userprofile.id)
+        url = f"/viewdata/{userprofile.id}"
+        return redirect(url)
+
 
 
 def upload_aadhaar(request):
@@ -72,9 +87,13 @@ def upload_aadhaar(request):
     if request.method == "POST":
         front_image = request.FILES['front']
         back_image = request.FILES['back']
+        
+        # data = read_image(front_image, back_image)
 
-        data = read_image(front_image, back_image)
-        print(data)
+        data_from_qr(front_image, back_image)
+        
+    
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse("DOne")
 
+        # return HttpResponse(json.dumps(data), content_type="application/json")
