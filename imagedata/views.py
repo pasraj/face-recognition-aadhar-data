@@ -43,14 +43,14 @@ def read_image(path_f, path_b):
 
 
 def home(request):
-    return render(request, "aadhar.html")
+    return render(request, "enternumber.html")
 
 def viewdata(request, pk):
     try:
-        print(pk)
-        user: UserProfile
         if request.method == "POST":
-            user = UserProfile.objects.get(phone=request.POST["phone"])
+            user = UserProfile.objects.get(phone_number=request.POST["phone"])
+            render(request, "viewdata.html", {"userdata":user})
+            
         if request.method == "GET":
             user = UserProfile.objects.get(id=pk)
         return render(request, "viewdata.html", {"userdata":user})
@@ -104,11 +104,11 @@ def processAadhar(request, pk):
     user = UserProfile.objects.get(id=pk)
     adhar = AadharImage.objects.get(profile=user)
     data = fetchAllDataFromAadhar(request=request, front_image= adhar.front_image, back_image=adhar.back_image)
+    adhar = AadharData.objects.create(profile=user,name=data["name"], 
+        dob=data["dob"], 
+        sex = data["sex"],
+        aadhaar_number = data["aadhaar_number"],
+        address = data["address"],
+        pincode = data["pincode"],
+        netcopy = data['netcopy'])
     return HttpResponse("Done")
-    try:
-        user = UserProfile.objects.get(id=pk)
-        adhar = AadharImage.objects.get(profile=user)
-        data = fetchAllDataFromAadhar(request=request, front_image= adhar.front_image, back_image=adhar.back_image)
-        print("result data")
-    except:
-        return HttpResponse("User Doesn't Exist")

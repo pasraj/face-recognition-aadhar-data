@@ -35,11 +35,11 @@ class AadharData(models.Model):
     profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=True)
     dob = models.CharField(max_length=20, null=True)
-    yob = models.CharField(max_length=10, null=True)
+    sex = models.CharField(max_length=10, null=True)
     aadhaar_number = models.CharField(max_length=20, null=True)
     address = models.CharField(max_length=400, null=True)
     pincode = models.CharField(max_length=10, null=True)
-    is_all_data = models.BooleanField(default=False)
+    netcopy = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.profile.name

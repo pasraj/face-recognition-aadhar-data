@@ -34,6 +34,7 @@ class FetchAdhar:
         return {
             "name": self.name,
             "dob": self.dob,
+            "sex": self.sex,
             "aadhaar_number": self.aadhaar_number,
             "address": self.address,
             "pincode": self.pincode,
@@ -171,6 +172,7 @@ def frontImageToRecord(adhar_obj,image):
                 pass
      
     adhar_obj.update(name=name, dob=dob, sex=sex)
+    print(adhar_obj.get_data())
     return adhar_obj
 
 
@@ -421,6 +423,4 @@ def fetchAllDataFromAadhar(request, front_image, back_image):
     #back image handle
     backImageToRecord(adhar_obj, back_image)
 
-    print(adhar_obj.get_data())
-
-    return True
+    return adhar_obj.get_data()
