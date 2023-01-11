@@ -15,7 +15,8 @@
             <th>Name</th>
             <th>Date of Birth</th>
             <th>Adhaar Number</th>
-            <th>Address</th>
+            <th>Address </th>
+            <th>Pincode </th>
           </tr>
         </thead>
         <tbody>
@@ -23,8 +24,9 @@
             <th>Given Data</th>
             <td>{{userdata.name}}</td>
             <td>{{userdata.dob}}</td>
-            {% comment %} <td>{{}}</td>
-            <td>{{}}</td> {% endcomment %}
+            <td>{{userdata.adhar_number}}</td>
+            <td>{{userdata.address}}</td>
+            <td>{{userdata.pincode}}</td>
           </tr>
           <tr>
             <th>Aadhaar Data</th>
@@ -42,6 +44,13 @@
           </tr>
         </tbody>
       </table>
+
+      <a class="m-4" href="/upload/adhar/{{userdata.id}}"> Upload adhar details</a>
+
+      <a class="m-4" href="/process/{{userdata.id}}/">Get Data from Adhar</a>
+
+      <a class="m-4" href="/upload/adhar/{{userdata.id}}">profile pic verification</a>
+      
     </body>
 
   </div>

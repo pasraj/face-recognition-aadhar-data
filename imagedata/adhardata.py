@@ -6,20 +6,25 @@ from pytesseract import image_to_string
 import requests
 import io
 from django.conf import settings
+import numpy as np
+import urllib
 
+from django.http import HttpResponse
 
 
 class FetchAdhar:
     name = None
     dob = None
+    sex = None
     aadhaar_number = None
     address = None
     pincode = None
     netcopy = False
 
-    def update(self, name=None, dob=None, aadhaar_number=None, address=None, picode=None, netcopy=None):
+    def update(self, name=None, dob=None,sex=None, aadhaar_number=None, address=None, picode=None, netcopy=None):
         self.name = name if name else self.name
         self.dob = dob if dob else self.dob
+        self.sex = sex if sex else self.sex
         self.aadhaar_number = aadhaar_number if aadhaar_number else self.aadhaar_number
         self.address = address if address else self.address
         self.pincode = picode if picode else  self.pincode
@@ -29,9 +34,11 @@ class FetchAdhar:
         return {
             "name": self.name,
             "dob": self.dob,
-            "aadhaar_number": self.adhar_number,
+            "aadhaar_number": self.aadhaar_number,
             "address": self.address,
-            "pincode": self.pincode}
+            "pincode": self.pincode,
+            "netcopy": self.netcopy
+            }
 
 
 
@@ -80,6 +87,7 @@ def imageToRecords(adhar_obj, front_image, back_image):
     # byte image
     front_data = numberAndType(front_image)
     back__data = numberAndType(back_image)
+
     netcopy = False
     adhar_number = ""
 
@@ -90,7 +98,6 @@ def imageToRecords(adhar_obj, front_image, back_image):
         adhar_number = back__data[0]
     else:
         adhar_number = front_data[0]
-
     adhar_obj.update(aadhaar_number=adhar_number, netcopy = netcopy)
     return adhar_obj
 
@@ -107,7 +114,6 @@ def frontImageToRecord(adhar_obj,image):
     
     image = image[upside:downside, leftside:rightside]
     text = image_to_string(image)
-    print(text)
 
     lines = text.split('\n')
     text1= []
@@ -140,10 +146,6 @@ def frontImageToRecord(adhar_obj,image):
         elif 'Year' in data:
             yob_str,l = data,i
             name = text1[l-2] if text1[l-2] else text1[l-1]
-    if dob_str:
-        print("dob_str", dob_str[-10:])
-    if yob_str:
-        print("yob_str", yob_str)
 
 
     if dob_str:
@@ -180,7 +182,6 @@ def data_from_qr(front_image, back_image):
         qr_data = decodedText.split(",")[0]
         data_dict = xmltodict.parse(qr_data)
         data = data_dict["PrintLetterBarcodeData"]
-        print(data)
         return {"is_data":True, "data": data}
     except:
         pass
@@ -192,19 +193,18 @@ def data_from_qr(front_image, back_image):
         qr_data = decodedText.split(",")[0]
         data_dict = xmltodict.parse(qr_data)
         data = data_dict["PrintLetterBarcodeData"]
-        print(data)
         return {"is_data":True, "data": data}
     except:
         return {"is_data":False}
 
 
-def backFirstApproachNetcopy(back_image):
+def backFirstApproachNetcopy(adhar_obj,back_image):
 
     hieght, width = back_image.shape[0], back_image.shape[1]
 
     leftside = int(width/2.5)
     rightside = width-leftside
-    image = image[0:hieght, 0:rightside]
+    image = back_image[0:hieght, 0:rightside]
 
     text = image_to_string(image)
 
@@ -231,8 +231,6 @@ def backFirstApproachNetcopy(back_image):
     is_last = False
     addres = ""
 
-
-
     def lastWord(adres_line):
         try:
             pin = int(adres_line[-6:])
@@ -256,12 +254,13 @@ def backFirstApproachNetcopy(back_image):
             break
             
     pincode = addres[-6:]
-    addres
     if addres:
+        adhar_obj.address = addres
+        adhar_obj.pincode = pincode
         return True
     False
 
-def backSecondApproachNetcopy(back_image):
+def backSecondApproachNetcopy(adhar_obj, back_image):
     text = image_to_string(back_image)
     lines = text.split('\n')
     text1= []
@@ -286,8 +285,6 @@ def backSecondApproachNetcopy(back_image):
     is_last = False
     addres = ""
 
-
-
     def lastWord(adres_line):
         try:
             pin = int(adres_line[-6:])
@@ -311,8 +308,9 @@ def backSecondApproachNetcopy(back_image):
             break
             
     pincode = addres[-6:]
-    addres
     if addres:
+        adhar_obj.address = addres
+        adhar_obj.pincode = pincode
         return True
     return False
 
@@ -386,7 +384,7 @@ def backImageToRecord(adhar_obj, back_image):
             return result
         return result
     else:
-        pass
+        return backPostalImage(adhar_obj, back_image)
 
 
 
@@ -395,32 +393,34 @@ def fetchAllDataFromAadhar(request, front_image, back_image):
     front_image_url = "http://" + request.get_host() + settings.MEDIA_URL + str(front_image)
     back_image_url = "http://" + request.get_host() + settings.MEDIA_URL + str(back_image)
 
-    front_image_file = requests.get(front_image_url)
-    back_image_file = requests.get(back_image_url)
+    front_image_file = urllib.request.urlopen(front_image_url)
+    back_image_file = urllib.request.urlopen(back_image_url)
 
-    front_image = Image.open(io.BytesIO(front_image.content))
-    back_image = Image.open(io.BytesIO(front_image.content))
+    arr_front = np.asarray(bytearray(front_image_file.read()), dtype=np.uint8)
+    back_front = np.asarray(bytearray(back_image_file.read()), dtype=np.uint8)
 
+
+    front_image = cv.imdecode(arr_front, -1)
+    back_image = cv.imdecode(back_front, -1)
 
     adhar_obj = FetchAdhar()
 
     # 1 from QR Code
-    result = data_from_qr(front_image, back_image)
-    if result["is_data"]:
-        return "Done"
+    # result = data_from_qr(front_image, back_image)
+    # if result["is_data"]:
+    #     return "Done"
         # return data json format
 
     # 1 | number, netcopy or not
-    adhar_obj = imageToRecords(adhar_obj, front_image,back_image)
+
+    imageToRecords(adhar_obj, front_image,back_image)
 
     # 2 | front page | name, sex, dob
-    adhar_obj = frontImageToRecord(adhar_obj, front_image)
-    
-    # back_data if internetcopy
-    if adhar_obj.netcopy:
-        adhar_obj = backImageToRecord(adhar_obj, back_image)
-    else:
-        pass
+    frontImageToRecord(adhar_obj, front_image)
 
+    #back image handle
+    backImageToRecord(adhar_obj, back_image)
 
+    print(adhar_obj.get_data())
 
+    return True

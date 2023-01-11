@@ -9,6 +9,8 @@ class UserProfile(models.Model):
     name = models.CharField(max_length=100, null=True)
     dob = models.CharField(max_length=20, null=True)
     adhar_number = models.CharField(max_length=20, null=True)
+    address = models.CharField(max_length=300, null=True, default=None)
+    pincode = models.CharField(max_length=10, null=True, default=None)
     phone_number = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
 

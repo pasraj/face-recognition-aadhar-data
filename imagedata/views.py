@@ -83,7 +83,8 @@ def newdata(request):
 
 def upload_aadhaar(request, pk):
     if request.method == "GET":
-        return render(request, 'aadhar.html')
+        user = UserProfile.objects.get(id=pk)
+        return render(request, 'aadhar.html', {"userdata":user})
     if request.method == "POST":
         front_image = request.FILES['front']
         back_image = request.FILES['back']
@@ -96,11 +97,18 @@ def upload_aadhaar(request, pk):
 
         # return HttpResponse(json.dumps(data), content_type="application/json")
 
+from .adhardata import *
 
 def processAadhar(request, pk):
+
+    user = UserProfile.objects.get(id=pk)
+    adhar = AadharImage.objects.get(profile=user)
+    data = fetchAllDataFromAadhar(request=request, front_image= adhar.front_image, back_image=adhar.back_image)
+    return HttpResponse("Done")
     try:
         user = UserProfile.objects.get(id=pk)
-        adhar = AadharImage.objects.filter(profile=user)[-1]
-        
+        adhar = AadharImage.objects.get(profile=user)
+        data = fetchAllDataFromAadhar(request=request, front_image= adhar.front_image, back_image=adhar.back_image)
+        print("result data")
     except:
         return HttpResponse("User Doesn't Exist")
