@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from django.shortcuts import redirect
 
 from . aadhaar_read_data import adhaar_read
-from . fetchdata import data_from_qr
+from .adhardata import data_from_qr
 
 
 
@@ -44,7 +44,7 @@ def read_image(path_f, path_b):
 
 def home(request):
     return render(request, "aadhar.html")
-        
+
 def viewdata(request, pk):
     try:
         print(pk)
@@ -57,7 +57,7 @@ def viewdata(request, pk):
     except:
         return render(request, "viewdata.html")
 
-    
+
 def newdata(request):
     if request.method == "GET":
         return render(request,"userdata.html")
@@ -81,19 +81,26 @@ def newdata(request):
 
 
 
-def upload_aadhaar(request):
+def upload_aadhaar(request, pk):
     if request.method == "GET":
         return render(request, 'aadhar.html')
     if request.method == "POST":
         front_image = request.FILES['front']
         back_image = request.FILES['back']
-        
-        # data = read_image(front_image, back_image)
-
-        data_from_qr(front_image, back_image)
-        
-    
-
+        user = UserProfile.objects.get(id=pk)
+        adhar = AadharImage.objects.create(
+            front_image=front_image,
+            back_image = back_image,
+            profile = user)
         return HttpResponse("DOne")
 
         # return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def processAadhar(request, pk):
+    try:
+        user = UserProfile.objects.get(id=pk)
+        adhar = AadharImage.objects.filter(profile=user)[-1]
+        
+    except:
+        return HttpResponse("User Doesn't Exist")
