@@ -142,12 +142,12 @@ def processAadhar(request, pk):
         pincode = data["pincode"],
         netcopy = data['netcopy'])
 
-    # adhar.is_name_matched = user.name.lower() == adhar.name.lower()
-    # adhar.is_adhar_matched = user.aadhaar_number == adhar.aadhaar_number 
-    # adhar.is_pincode_matched = user.pincode == adhar.pincode
-    # adhar.is_sex_matched = user.sex == adhar.sex
-    # adhar.is_dob_matched = date_compare(user.dob, adhar.dob)
-    # adhar.save()
+    adhar.is_name_matched = user.name.lower() == adhar.name.lower()
+    adhar.is_adhar_matched = user.aadhaar_number == adhar.aadhaar_number 
+    adhar.is_pincode_matched = user.pincode == adhar.pincode
+    adhar.is_sex_matched = user.sex == adhar.sex
+    adhar.is_dob_matched = date_compare(user.dob, adhar.dob)
+    adhar.save()
             
     url = f"/viewdata/{user.id}/"
     return redirect(url)
