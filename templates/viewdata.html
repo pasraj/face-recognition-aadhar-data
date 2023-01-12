@@ -17,6 +17,7 @@
             <th>Adhaar Number</th>
             <th>Address </th>
             <th>Pincode </th>
+            <th>Gender</th>
           </tr>
         </thead>
         <tbody>
@@ -24,23 +25,28 @@
             <th>Given Data</th>
             <td>{{userdata.name}}</td>
             <td>{{userdata.dob}}</td>
-            <td>{{userdata.adhar_number}}</td>
+            <td>{{userdata.aadhaar_number}}</td>
             <td>{{userdata.address}}</td>
             <td>{{userdata.pincode}}</td>
+            <td>{{userdata.sex}}</td>
           </tr>
           <tr>
             <th>Aadhaar Data</th>
-            {% comment %} <td>{{}}</td>
-            <td>{{}}</td>
-            <td>{{}}</td>
-            <td>{{}}</td> {% endcomment %}
+            <td>{{adhar_data.name}}</td>
+            <td>{{adhar_data.dob}}</td>
+            <td>{{adhar_data.aadhaar_number}}</td>
+            <td>{{adhar_data.address}}</td>
+            <td>{{adhar_data.pincode}}</td>
+            <td>{{adhar_data.sex}}</td>
           </tr>
           <tr>
-            <th>Matched</t>
-            {% comment %} <td>{{}}</td>
-            <td>{{}}</td>
-            <td>{{}}</td>
-            <td>{{}}</td> {% endcomment %}
+            <th>Matched Data</th>
+            <td>{% if adhar_data.is_name_matched %} Matched {% else %} Does not matched {% endif %}</td>
+            <td>{% if adhar_data.is_dob_matched %} Matched {% else %} Does not matched {% endif %}</td>
+            <td>{% if adhar_data.is_adhar_matched %} Matched {% else %} Does not matched {% endif %}</td>
+            <td>Can not be compare</td>
+            <td>{%if adhar_data.is_pincode_matched%} Matched {% else %} Does not matched {% endif %}</td>
+            <td>{%if adhar_data.is_name_matched%} Matched {% else %} Does not matched {% endif %}</td>
           </tr>
         </tbody>
       </table>
@@ -49,7 +55,7 @@
 
       <a class="m-4" href="/process/{{userdata.id}}/">Get Data from Adhar</a>
 
-      <a class="m-4" href="/upload/adhar/{{userdata.id}}">profile pic verification</a>
+      <a class="m-4" href="/upload/face/{{userdata.id}}">profile pic verification</a>
       
     </body>
 
